@@ -35,12 +35,37 @@ python main.py
 
 ## Portable packaging
 
+A PyInstaller-based build script is provided. It produces a portable folder on Windows
+and a `.app` bundle on macOS.
+
+### Windows 11
+
 ```powershell
-pip install pyinstaller
-pyinstaller --onedir --name Gripsou --windowed main.py
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -r requirements-build.txt
+python build.py
 ```
 
-The portable folder will be in `dist\Gripsou\`.
+The portable folder will be in `dist\Gripsou\`. Run `dist\Gripsou\Gripsou.exe`.
+
+### macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-build.txt
+python build.py
+```
+
+The app bundle will be in `dist/Gripsou.app`.
+
+### Automated builds
+
+A GitHub Actions workflow in `.github/workflows/build.yml` builds and zips both the
+Windows portable folder and the macOS `.app` bundle on every push to `main`.
 
 ## Project structure
 
