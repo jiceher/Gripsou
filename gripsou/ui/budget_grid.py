@@ -75,6 +75,7 @@ class CellEditCommand(QUndoCommand):
         self._grid._line_items[self._row].monthly_values[self._month] = value
         self._grid._refresh_row(self._row)
         self._grid._refresh_summary_rows()
+        self._grid.data_changed.emit()
 
 
 class BudgetGrid(QTableWidget):
@@ -308,8 +309,6 @@ class BudgetGrid(QTableWidget):
             item.setBackground(QBrush(COLOR_SUMMARY_BG))
             self.setItem(row, COL_TOTAL, item)
 
-        self.data_changed.emit()
-
     def _apply_row_resize_mode(self):
         vh = self.verticalHeader()
         vh.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
@@ -342,6 +341,7 @@ class BudgetGrid(QTableWidget):
             self._programmatic = True
             self._apply_cell_state(item, li.category, dirty, validated)
             self._programmatic = False
+        self.data_changed.emit()
 
     # ------------------------------------------------------------------
     # Edit handling
@@ -391,6 +391,7 @@ class BudgetGrid(QTableWidget):
             return
         li.label = new_label
         self.db.rename_line_item(li.id, new_label)
+        self.data_changed.emit()
 
     # ------------------------------------------------------------------
     # Row operations (called from MainWindow menus)
@@ -404,6 +405,7 @@ class BudgetGrid(QTableWidget):
         for m in range(1, 13):
             self.db.set_monthly_value(item_id, m, 0.0)
         self._load_data()
+        self.data_changed.emit()
 
     def delete_selected_row(self):
         rows = sorted({idx.row() for idx in self.selectedIndexes()})
@@ -413,6 +415,7 @@ class BudgetGrid(QTableWidget):
         for r in reversed(data_rows):
             self.db.delete_line_item(self._line_items[r].id)
         self._load_data()
+        self.data_changed.emit()
 
     def get_line_items(self) -> list[LineItem]:
         return list(self._line_items)

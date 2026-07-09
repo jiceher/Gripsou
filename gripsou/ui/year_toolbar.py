@@ -79,7 +79,8 @@ class NewYearDialog(QDialog):
 
 
 class YearToolbar(QWidget):
-    year_changed = pyqtSignal(int)   # year_id
+    year_changed = pyqtSignal(int)       # year_id
+    years_modified = pyqtSignal()        # emitted when a year is added or deleted
 
     def __init__(self, db: Database, parent=None):
         super().__init__(parent)
@@ -152,6 +153,7 @@ class YearToolbar(QWidget):
         idx = self._combo.findData(new_id)
         if idx >= 0:
             self._combo.setCurrentIndex(idx)
+        self.years_modified.emit()
 
     def _on_delete_year(self):
         yid = self.current_year_id()
@@ -168,3 +170,4 @@ class YearToolbar(QWidget):
             return
         self.db.delete_year(yid)
         self.refresh()
+        self.years_modified.emit()

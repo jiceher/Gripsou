@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
 
         self._year_toolbar = YearToolbar(self.db)
         self._year_toolbar.year_changed.connect(self._on_year_changed)
+        self._year_toolbar.years_modified.connect(self._refresh_last_update_label)
         layout.addWidget(self._year_toolbar)
 
         self._tabs = QTabWidget()
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         yid = self._year_toolbar.current_year_id()
         if yid is not None:
             self._grid.load_year(yid)
+            self._charts.update_data(self._grid.get_line_items())
 
     def _build_menu(self):
         mb = self.menuBar()
@@ -146,6 +148,7 @@ class MainWindow(QMainWindow):
 
     def _on_year_changed(self, year_id: int):
         self._grid.load_year(year_id)
+        self._charts.update_data(self._grid.get_line_items())
         label = self._year_toolbar._combo.currentText()
         self.setWindowTitle(f"Gripsou — {label}")
         self._status.showMessage(f"Loaded year {label}")
@@ -156,8 +159,13 @@ class MainWindow(QMainWindow):
 
     def _refresh_last_update_label(self):
         import datetime
-        now = datetime.datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
-        self._last_update_label.setText(f"Last update: {now}")
+        import os
+        try:
+            mtime = os.path.getmtime(self.db.path)
+        except OSError:
+            mtime = datetime.datetime.now().timestamp()
+        ts = datetime.datetime.fromtimestamp(mtime).strftime("%Y-%m-%d  %H:%M:%S")
+        self._last_update_label.setText(f"Last update: {ts}")
 
     def _add_row(self, category: str):
         label, ok = QInputDialog.getText(
@@ -214,6 +222,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Import failed", str(e))
             return
         self._grid.reload()
+        self._on_data_changed()
         self._status.showMessage(f"Imported {len(data)} line item(s).")
 
     def _on_export_xlsx(self):
