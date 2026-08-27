@@ -22,8 +22,9 @@ COL_LABEL = 0
 COL_TAG = 1
 COL_JAN = 2           # months: COL_JAN + (month-1)
 COL_TOTAL = 14        # after 12 months
+COL_MEAN = 15         # average of the 12 monthly values
 
-FIXED_COLS = 15       # label + tag + 12 months + total
+FIXED_COLS = 16       # label + tag + 12 months + total + mean
 
 # Colours
 COLOR_CREDIT_BG = QColor("#e8f5e9")          # light green
@@ -118,7 +119,7 @@ class BudgetGrid(QTableWidget):
 
     def _setup_table(self):
         self.setColumnCount(FIXED_COLS)
-        headers = ["Line item", "Type"] + MONTHS + ["Total"]
+        headers = ["Line item", "Type"] + MONTHS + ["Total", "Mean"]
         self.setHorizontalHeaderLabels(headers)
         hh = self.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
@@ -127,6 +128,7 @@ class BudgetGrid(QTableWidget):
         self.setColumnWidth(COL_TAG, 70)
         for c in range(COL_JAN, COL_TOTAL + 1):
             self.setColumnWidth(c, 85)
+        self.setColumnWidth(COL_MEAN, 85)
         hh.setStretchLastSection(False)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.setEditTriggers(
@@ -240,6 +242,13 @@ class BudgetGrid(QTableWidget):
         t_item.setBackground(QBrush(bg))
         self.setItem(row, COL_TOTAL, t_item)
 
+        mean = total / 12.0
+        m_item = _amount_item(mean, editable=False)
+        m_item.setFont(bold)
+        m_item.setForeground(QBrush(_color_by_sign(total)))
+        m_item.setBackground(QBrush(bg))
+        self.setItem(row, COL_MEAN, m_item)
+
     def _refresh_summary_rows(self):
         n = len(self._line_items)
         sep_row = n
@@ -298,16 +307,29 @@ class BudgetGrid(QTableWidget):
 
         net_year = total_credits_year - total_debits_year
 
+        # summary mean placeholder: initially empty for the monthly mean cells
+        for row in (credits_row, debits_row, net_row):
+            mean_placeholder = QTableWidgetItem("")
+            mean_placeholder.setFlags(mean_placeholder.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            mean_placeholder.setBackground(QBrush(COLOR_SUMMARY_BG))
+            self.setItem(row, COL_MEAN, mean_placeholder)
+
         for row, value in [
             (credits_row, total_credits_year),
             (debits_row, total_debits_year),
             (net_row, net_year),
         ]:
+            signed = value if row != debits_row else -value
             item = _amount_item(value, editable=False)
             item.setFont(bold)
-            item.setForeground(QBrush(_color_by_sign(value if row != debits_row else -value)))
+            item.setForeground(QBrush(_color_by_sign(signed)))
             item.setBackground(QBrush(COLOR_SUMMARY_BG))
             self.setItem(row, COL_TOTAL, item)
+            mean_item = _amount_item(value / 12.0, editable=False)
+            mean_item.setFont(bold)
+            mean_item.setForeground(QBrush(_color_by_sign(signed)))
+            mean_item.setBackground(QBrush(COLOR_SUMMARY_BG))
+            self.setItem(row, COL_MEAN, mean_item)
 
     def _apply_row_resize_mode(self):
         vh = self.verticalHeader()
