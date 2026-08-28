@@ -136,6 +136,8 @@ class BudgetGrid(QTableWidget):
             QAbstractItemView.EditTrigger.AnyKeyPressed
         )
         self.setAlternatingRowColors(False)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         vh = self.verticalHeader()
         vh.setVisible(True)
         vh.setDefaultSectionSize(26)
