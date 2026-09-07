@@ -316,20 +316,19 @@ class BudgetGrid(QTableWidget):
             mean_placeholder.setBackground(QBrush(COLOR_SUMMARY_BG))
             self.setItem(row, COL_MEAN, mean_placeholder)
 
-        for row, value in [
-            (credits_row, total_credits_year),
-            (debits_row, total_debits_year),
-            (net_row, net_year),
+        for row, value, mean_value in [
+            (credits_row, total_credits_year, total_credits_year / 12.0),
+            (debits_row, -total_debits_year, -total_debits_year / 12.0),
+            (net_row, net_year, net_year / 12.0),
         ]:
-            signed = value if row != debits_row else -value
             item = _amount_item(value, editable=False)
             item.setFont(bold)
-            item.setForeground(QBrush(_color_by_sign(signed)))
+            item.setForeground(QBrush(_color_by_sign(value)))
             item.setBackground(QBrush(COLOR_SUMMARY_BG))
             self.setItem(row, COL_TOTAL, item)
-            mean_item = _amount_item(value / 12.0, editable=False)
+            mean_item = _amount_item(mean_value, editable=False)
             mean_item.setFont(bold)
-            mean_item.setForeground(QBrush(_color_by_sign(signed)))
+            mean_item.setForeground(QBrush(_color_by_sign(mean_value)))
             mean_item.setBackground(QBrush(COLOR_SUMMARY_BG))
             self.setItem(row, COL_MEAN, mean_item)
 

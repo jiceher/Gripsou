@@ -1,7 +1,7 @@
 """Build a standalone Gripsou executable/bundle with PyInstaller.
 
 Usage:
-    .venv\Scripts\python build.py          # Windows -> dist\Gripsou\
+    .venv\Scripts\python build.py          # Windows -> dist\Gripsou.exe
     .venv/bin/python build.py               # macOS   -> dist/Gripsou.app
 """
 
@@ -25,7 +25,6 @@ def pyinstaller_args() -> list[str]:
         "--noconfirm",
         "--clean",
         "--windowed",
-        "--onedir",
         "--name",
         "Gripsou",
         "--paths",
@@ -40,6 +39,10 @@ def pyinstaller_args() -> list[str]:
         "pyxlsb",
         str(ROOT / "main.py"),
     ]
+    if system == "Windows":
+        args.append("--onefile")
+    else:
+        args.append("--onedir")
     if system == "Darwin":
         args += ["--osx-bundle-identifier", "com.gripsou.budgetmanager"]
     return args
@@ -57,7 +60,7 @@ def main():
 
     system = platform.system()
     if system == "Windows":
-        print(f"\nBuild complete: {dist / 'Gripsou' / 'Gripsou.exe'}")
+        print(f"\nBuild complete: {dist / 'Gripsou.exe'}")
     elif system == "Darwin":
         print(f"\nBuild complete: {dist / 'Gripsou.app'}")
     else:

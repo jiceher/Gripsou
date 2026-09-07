@@ -35,7 +35,7 @@ python main.py
 
 ## Portable packaging
 
-A PyInstaller-based build script is provided. It produces a portable folder on Windows
+A PyInstaller-based build script is provided. It produces a single executable on Windows
 and a `.app` bundle on macOS.
 
 ### Windows 11
@@ -48,7 +48,8 @@ pip install -r requirements-build.txt
 python build.py
 ```
 
-The portable folder will be in `dist\Gripsou\`. Run `dist\Gripsou\Gripsou.exe`.
+The portable executable will be `dist\Gripsou.exe`. Run it directly; everything is
+self-contained.
 
 ### macOS
 
